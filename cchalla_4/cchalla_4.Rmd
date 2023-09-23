@@ -1,0 +1,98 @@
+---
+title: "Assignment_4(QMM)"
+author: "Chakri"
+date: "2023-09-23"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+1. The Weigelt Corporation has three branch plants with excess production capacity. Fortunately,
+the corporation has a new product ready to begin production, and all three plants have this
+capability, so some of the excess capacity can be used in this way. This product can be made in
+three sizes--large, medium, and small--that yield a net unit profit of $420, $360, and $300,
+respectively. Plants 1, 2, and 3 have the excess capacity to produce 750, 900, and 450 units per
+day of this product, respectively, regardless of the size or combination of sizes involved.
+The amount of available in-process storage space also imposes a limitation on the production
+rates of the new product. Plants 1, 2, and 3 have 13,000, 12,000, and 5,000 square feet,
+respectively, of in-process storage space available for a day's production of this product. Each
+unit of the large, medium, and small sizes produced per day requires 20, 15, and 12 square feet,
+respectively.
+Sales forecasts indicate that if available, 900, 1,200, and 750 units of the large, medium, and
+small sizes, respectively, would be sold per day.
+At each plant, some employees will need to be laid off unless most of the plant’s excess
+production capacity can be used to produce the new product. To avoid layoffs if possible,
+management has decided that the plants should use the same percentage of their excess capacity
+to produce the new product.
+Management wishes to know how much of each of the sizes should be produced by each of the
+plants to maximize profit.
+Solve the problem using lpsolve, or any other equivalent library in R.
+
+
+Let C1 – large sized quantities produced by Plant 1
+    C2 – medium sized quantities produced by Plant 1
+    C3 – small sized quantities produced by Plant 1
+    D1 – large sized quantities produced by Plant 2
+    D2 – medium sized quantities produced by Plant 2
+    D3 – small sized quantities produced by Plant 2
+    E1 – large sized quantities produced by Plant 3
+    E2 – medium sized quantities produced by Plant 3
+    E3 – small sized quantities produced by Plant 3
+
+
+The mathematical formulation of the problem is:
+Maximize Profit-420C1+420C2+420C3 +360D1+360D2+360D3 +300E1+300E2+300E3 = z              (objective function)
+    subject to  C1+D1+E1 < 750, C2+D2+E2 < 900, C3+D3+E3 < 450                           (capacity const)
+                20C1+15D1+12E1 < 13000, 20C2+15D2+12E3 < 12000, 20C3+15D3+12E3 < 5000    (sq.ft const)
+                C1+D1+E1 < 900, C2+D2+E2 < 1200, C3+D3+E3 < 750                          (sales const)
+               (C1+D1+E1)/750 =(C2+D2+E2)/900 = (C3+D3+E3)/450 can also be written as:
+                900C1+900D1+900E1-750C2-750D2-750E2 = 0, 
+                450C2+450D2+450E2-900C3-900D3-900E3 = 0, 
+                750C3+750D3+750E3-450C1-450D1-450E1 = 0                                  (percentage const)
+                
+
+
+
+#need to install the packages for the following lp problem called "lpSolve"
+
+```{r}
+install.packages("lpSolve")
+#load th library which we installed
+library(lpSolve)
+#calling the objective function and to create it in vector format
+f.obj <- c(420,360,300, 420,360,300, 420,360,300)
+#declaring the above constraints to create a matrix which is two dimensional data that can store rows and columns
+f.con <- matrix(c(1,1,1, 0,0,0, 0,0,0,
+                  0,0,0, 1,1,1, 0,0,0,
+                  0,0,0, 0,0,0, 1,1,1,
+                  20,15,12, 0,0,0, 0,0,0,
+                  0,0,0, 20,15,12, 0,0,0,
+                  0,0,0, 0,0,0, 20,15,12,
+                  1,1,1, 0,0,0, 0,0,0,
+                  0,0,0, 1,1,1, 0,0,0,
+                  0,0,0, 0,0,0, 1,1,1,
+                  900,900,900, -750,-750,-750, 0,0,0,
+                  0,0,0, 450,450,450, -900,-900,-900,
+                  -450,-450,-450, 0,0,0, 750,750,750), ncol=9, byrow=TRUE)
+f.con
+#creating the directions in vector format for the above constraints
+f.dir <- c("<=","<=","<=","<=","<=","<=","<=","<=","<=","=","=","=")
+#declare the right hand side values of the constraints in vector format
+f.rhs <- c(750,900,450,13000,12000,5000,900,1200,750,0,0,0)
+#lp() is used to solve the above lp model which is included in package
+#int.vec is used to take the decision variables such as C1, C2, C3, D1, D2, D3, E1, E2, E3 as integer variables like the whole numbers.
+f.sol <- lp("max",f.obj,f.con,f.dir,f.rhs, int.vec = 1:9)
+#without giving the int.vec
+f.sol1 <- lp("max",f.obj,f.con,f.dir,f.rhs)
+#with int.vec solution for the lp model
+f.sol
+#without int.vec solution for the lp model
+f.sol1
+#by finding the decision variables and most optimal solution
+f.sol$solution
+f.sol$objval
+#finding the decision variables and most optimal solution without int.vec
+f.sol1$solution
+f.sol1$objval
+```
+
